@@ -3,8 +3,10 @@ package application
 
 import (
 	"path/filepath"
-	"reflect"
 
+	cacher "github.com/unvs/libs/cacher"
+
+	memcacher "github.com/unvs/libs/cacher/memcacher"
 	config "github.com/unvs/libs/configReader"
 )
 
@@ -14,13 +16,13 @@ type Application struct {
 	Name string
 	// version of the app will be set by the build process or env variable
 	// in docker container
-	Version  string
-	AppPath  string
-	Config   *config.Config
-	services map[reflect.Type]interface{}
+	Version string
+	AppPath string
+	Config  *config.Config
+	Cacher  cacher.Cacher
 }
 
-func (app *Application) Init() (err error) {
+func (app *Application) Init() error {
 	app.Name = "go-x-files"
 	app.Version = "0.0.1"
 	app.AppPath = config.GetAppPath()
@@ -32,22 +34,17 @@ func (app *Application) Init() (err error) {
 		return err
 	}
 	app.Config = appConfig
+	app.Cacher, err = memcacher.NewMemcacheCacher(app.Config.CacheServer, app.Config.CachePrefix)
+	if err != nil {
+		return err
+	}
 	return nil
 
 }
 
 var AppContext Application
 
-func createInstance[T any]() T {
-	var zero T
-	if reflect.TypeOf(zero).Kind() == reflect.Interface {
-		return zero // Return nil if it is interface
-	}
-	instance := reflect.New(reflect.TypeOf(zero)).Elem().Interface().(T)
-	return instance
-}
-
-func init() {
+func InitGlobalContext() {
 	AppContext = Application{}
 	err := AppContext.Init()
 	if err != nil {

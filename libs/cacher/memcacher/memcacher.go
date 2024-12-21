@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"crypto/sha256"
+	"encoding/hex"
+
 	"github.com/bradfitz/gomemcache/memcache"
 	cacher "github.com/unvs/libs/cacher"
 )
@@ -38,21 +41,20 @@ func (c *MemcacheCacher) GetPrefix() string {
 }
 
 func (c *MemcacheCacher) GetKey(key string) string {
-	return c.prefix + key
+	relKey := c.prefix + key
+	hash256 := sha256.Sum256([]byte(relKey))
+	return hex.EncodeToString(hash256[:])
 }
 
-func (c *MemcacheCacher) Get(key string) (interface{}, error) {
+func (c *MemcacheCacher) GetString(key string) string {
 	item, err := c.client.Get(c.GetKey(key))
 	if err != nil {
-		if err == memcache.ErrCacheMiss {
-			return nil, nil // Return nil, nil for cache miss
-		}
-		return nil, fmt.Errorf("memcache get error: %w", err)
+		panic(err)
 	}
-	return item.Value, nil
+	return string(item.Value)
 }
 
-func (c *MemcacheCacher) Set(key string, value interface{}) error {
+func (c *MemcacheCacher) SetString(key string, value string, expiry time.Duration) error {
 	b, err := marshalValue(value)
 	if err != nil {
 		return err
@@ -70,25 +72,37 @@ func (c *MemcacheCacher) Delete(key string) error {
 	return c.client.Delete(c.GetKey(key))
 }
 
-func (c *MemcacheCacher) GetDict(key string) (map[string]interface{}, error) {
-	val, err := c.Get(key)
+func (c *MemcacheCacher) GetDict(key string) map[string]interface{} {
+	val, err := c.client.Get(key)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 	if val == nil {
-		return nil, nil // Cache miss
+		return nil
 	}
 
 	var dict map[string]interface{}
-	err = json.Unmarshal(val.([]byte), &dict)
+	err = json.Unmarshal(val.Value, &dict)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal dict: %w", err)
+		panic(fmt.Errorf("failed to unmarshal dict: %w", err))
 	}
-	return dict, nil
+	return dict
 }
 
-func (c *MemcacheCacher) SetDict(key string, value map[string]interface{}) error {
-	return c.Set(key, value) // Use the existing Set method
+func (m *MemcacheCacher) SetDict(key string, value map[string]interface{}, expiry time.Duration) error {
+	data, err := json.Marshal(value)
+	if err != nil {
+		return fmt.Errorf("failed to marshal map to JSON: %w", err)
+	}
+
+	finalExpiry := m.expiry // Use the default expiry
+
+	if expiry != 0 { // Check if expiry is not the zero value
+		finalExpiry = expiry // Override with the provided expiry
+	}
+
+	item := &memcache.Item{Key: m.GetKey(key), Value: data, Expiration: int32(finalExpiry.Seconds())}
+	return m.client.Set(item)
 }
 
 // marshalValue marshals any value to []byte
@@ -123,4 +137,25 @@ func (c *MemcacheCacher) HealthCheck(timeout time.Duration) error {
 		return nil
 	}
 	return nil
+}
+func NewMemcacheCacher(server, prefix string) (*MemcacheCacher, error) {
+	if server == "" {
+		return nil, fmt.Errorf("server address cannot be empty")
+	}
+
+	mc := &MemcacheCacher{
+		server: server,
+		prefix: prefix,
+	}
+
+	client := memcache.New(server)
+
+	// Attempt a Ping to check the connection
+	err := client.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to memcached server: %w", err)
+	}
+
+	mc.client = client
+	return mc, nil
 }

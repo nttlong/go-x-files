@@ -1,0 +1,1 @@
+docker run -d --name my-memcached -p 11211:11211 memcached:latest

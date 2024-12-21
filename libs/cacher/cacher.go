@@ -9,9 +9,9 @@ type Cacher interface {
 	SetPrefix(prefix string) error
 	GetPrefix() string
 	GetKey(key string) string
-	Get(key string) (interface{}, error)
-	Set(key string, value interface{}) error
+	GetString(key string) string
+	SetString(key string, value string, expiry time.Duration) error
 	Delete(key string) error
-	GetDict(key string) (map[string]interface{}, error)
-	SetDict(key string, value map[string]interface{}) error
+	GetDict(key string) map[string]interface{}
+	SetDict(key string, value map[string]interface{}, expiry time.Duration) error
 }
