@@ -1,0 +1,10 @@
+package CacheServices
+
+import (
+	cacher "github.com/unsv/libs/services/cachersvc/cacher"
+)
+
+type Cacher cacher.Cacher
+type MyService struct {
+	cacher Cacher
+}

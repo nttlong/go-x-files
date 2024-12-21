@@ -1,0 +1,172 @@
+debug: true
+cache_server: localhost:11211 # important
+cache_prefix: v01
+#cache_server: 172.16.7.107:11211 # important
+host_url: http://localhost:8012/lvfile
+db: mongodb://admin-doc:123456@192.168.18.36:27017/lv-docs
+db_codx_: mongodb://admin:Erm%402021@172.16.7.33:27017
+admin_db_name: lv-docs # the database in mongodb where manage all tenant
+jinja_templates_dir: ./cy_controllers/pages/resource/html
+static_dir: ./cy_controllers/pages/resource/static
+bind: 0.0.0.0:8012
+host_dir: "lv-file" #http://localhost:8012/lv-files
+workers: 2
+on_premise_tenant: default
+basic_auth:
+  ui:
+    realm: UI Realm
+    username: admin
+    password: admin
+security_mode: off
+timeout_keep_alive: 30
+timeout_graceful_shutdown: 30
+server_type: unvicorn
+worker_class: uvloop
+h2_max_concurrent_streams: 100
+jwt:
+  secret_key: fe1cb9a2-ba6c-40fb-b893-5b80ec26a036 #09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
+  algorithm: HS256
+  access_token_expire_minutes: 480
+  secret_user: 01f31140-b790-4855-93d8-45155bfa2660
+  secret_password: aa7d2b21-942d-4b8d-8c06-7e9a68dc0dfd
+elastic_search:
+  server:
+    - http://192.168.18.36:9200
+  prefix_index_: lv-codx
+  prefix_index: codx
+  index_max_analyzed_offset: 60000000
+  max_analyzed_offset: 1000
+  field_content: content_bm25
+ext_office_file: [
+                   xds,ini,config,md,
+                   abap,ash,ampl,mod,g4,apib,apl,ascx,asax,axd,dats,hats,sats,as,
+                   ada,ads,agda,als,conf,apacheconf,vhost,cls,applescript,scpt,
+                   arc,ino,asciidoc,adoc,asc,aj,asm,inc,nasm,aug,ahk,ahk1,au3,
+                   awk,auk,gawk,mawk,nawk,cmd,bat,yml,yaml,bison,bb,decls,bmx,
+                   bsv,boo,b,bf,brs,bro,cats,idc,w,cake,cshtml,c++,cc,cxx,hh,hpp,
+                   hxx,inc,inl,ipp,tcc,tpp,c-objdump,json,chs,clp,cmake,cmake.in,
+                   cod,cbl,cobol,cpy,mss,chpl,ceylon,chpl,ch,ck,circu,clw,icl,dcl,
+                   clikc,clj,boot,cl2,cljs,cljs,cljs.hl,cljscm,hic,
+                   coffee,_coffee,cjsx,cson,iced,crm,cfml,
+                   cfc,lisp,asd,cl,l,lsp,ny,podsl,sexp,cp,cps,coq,v,
+                   cfc,lisp,asd,cl,l,lsp,ny,podsl,sexp,cp,cps,coq,v,
+                   cppobjdump,c++-objdump,c++objdump,cpp-objdump,cxx-objdump,
+                   creole,cr,feature,cu,cuh,cy,pyx,pxd,pxi,dart,dockerfile,
+                   dylan,dyl,intr,lid,xlsm,
+                   sql,log,email,eml,emlx,msg,oft,ost,pst,vcf,bat,py,pl,
+                   sh,asp,aspx,cs,csx,css,htm,js,jsp,php,rss,xhtml,key,opd,pps,odtc,class,
+                   cpp,h,java,swift,vb,vbx,ods,wpd,rtf,tex,
+                   docx,doc,xls,xlsx,txt,pdf,ppt,ppx,pptx,json,psd,html,xml,js,otg,svg,vsd,
+                    odt,csv,db,doc,docx,dotx,fodp,fods,fodt,mml,odb,odf,odg,odm,odp,ods,otg,otp,ots,ott,oxt,
+                    pptx,psw,sda,sdc,sdd,sdp,sdw,slk,smf,stc ,
+                    std,sti,stw,sxc,sxg,sxi,sxm,uof,uop,uos,uot
+                    vsd,vsdx,wdb,wps,wri,xls,xlsx,pem,yaml,ym,toml,json,jsx,ts,tsx,cs,csx,rdl,html
+]
+ext_video_file : [mp4,mov,avi,wmv,flv,mkv,webm,mpg,mpeg]
+ext_image_file: [
+  jpg, jpeg,gif,webp,tiff,tif,psd,raw,arw,cr2,etc,svg,
+  eps,ai,pdf,heif,heic,ind,indd,jp2, j2k, jpf
+]
+rabbitmq:
+  server: 172.16.7.99
+  port: 32358
+  msg: xyzdsc-2024 #rabbitmq.msg: xyzdsc-2024
+  username: codx
+  password: Lacviet#123
+services:
+  - "cyx.common.file_storage_mongodb.MongoDbFileService->cy_plugins.file_storage_local.FileStorageService"
+  - "cyx.common.file_storage_mongodb.MongoDbFileStorage->cy_plugins.file_storage_hybrid.HybridFileStorage"
+  - "cyx.common.file_storage_mongodb.MongoDbFileReader->cy_plugins.files_storage_hybrid_reader.HybridReader"
+#sudo mount -t nfs 192.168.18.36:/codx-file-storage/files /mnt/files
+#sudo mount -t nfs 192.168.18.36:/codx-file-storage/files /mnt/minio-99-files
+file_storage_path: "/mnt/files"
+file_storage_encrypt: true
+shared_storage: ./share-storage
+minio_storage:
+  end_point: 172.16.7.99:30040
+  access_key: BAILo22wHxxtC791IeRk
+  secret_key: aKAEmOLDargk4lTOVChCR6PZA6Du2C4V5rT2CUFI
+  secure: false
+dataset_path: "/mnt/files/dataset"
+server_thumb_office: "http://172.16.7.99:31792"
+process_services_host: http://172.16.13.72
+clouds_support:
+  - Google
+  - Azure
+  - WAS
+
+
+# below settings are subsidiaries
+remote_office: http://172.16.7.99:32261
+remote_office_: http://172.16.13.72:8001
+remote_pdf: http://172.16.7.99:32263
+remote_pdf_: http://172.16.13.72:8001
+remote_video: http://172.16.7.99:32264
+remote_ocr: http://172.16.7.99:32266
+tika_server: http://172.16.7.99:32265
+remote_thumb: http://172.16.7.99:32267
+remote_thumb_: http://172.16.7.99:32267
+
+private_web_api_: http://172.16.13.72:8012/lvfile
+private_web_api: http://172.16.7.99/lvfile
+#content_service: http://172.16.13.72:8087
+#generation:
+#default_tenant: test-sync-file
+#file_dir_path: /home/vmadmin/python/cy-py
+# source /root/python-2024/lv-file-fix-2024/py-files-sv/docker-build at 172.16.13.72
+# mount to /mnt/k8s
+#sudo mount -t nfs 172.16.13.72:/root/python-2024/lv-file-fix-2024/py-files-sv /mnt/server_72
+ui_key: 9CAB42A7927BB51594B7B9656BA8C
+no_ui: false
+backend_api:
+  - /api/accounts/token
+  - /api/global/settings/update
+  - /api/config/minio/get-info
+  - /api/config/minio/save
+  - /api/get-info
+  - /api/{app_name}/file/{directory:path}
+  - /api/{app_name}/content/readable
+  - /api/apps/{app_name}/re_index
+  - /api/admin/apps/register
+  - /api/apps/admin/register
+  - /api/admin/apps/update/{app_name}
+  - /api/admin/apps/get/{app_name}
+  - /api/admin/apps
+  - /api/admin/apps/re-gen-secret-key/{app_name}
+  - /api/auth/token/{app_name}
+  - /api/logs/views
+  - /api/logs/delete
+  - /api/logs/list-types
+  - /api/logs/list-instance
+  - /api/{app_name}/files/upload_new
+  - /api/{app_name}/files/register_new
+  - /api/{app_name}/files/mark_delete
+  - /api/{app_name}/files
+  - /api/admin/files/move_tenant
+  - /api/{app_name}/files/clone
+  - /api/{app_name}/files/delete
+  - /api/{app_name}/content/save
+  - /api/{app_name}/files/content-re-process
+  - /api/{app_name}/files/get-url
+  - /api/{app_name}/files/remove_privileges
+  - /api/{app_name}/files/update_privileges
+  - /api/{app_name}/privileges/update
+  - /api/{app_name}/privileges/remove
+  - /api/{app_name}/privileges/add
+  - /api/{app_name}/content/update_by_conditional
+  - /api/{app_name}/search
+  - /api/{app_name}/meta_info/get
+  - /api/{app_name}/meta_info/save
+  - /api/sys/admin/get_config
+  - /api/{app_name}/files/info
+  - /api/files/check_out_source
+  - /api/files/check_in_source
+  - /api/{app_name}/files/inspect-content
+  - /api/{app_name}/files/gemini-assistant
+  - /api/{app_name}/auth/check
+  - /api/{app_name}/cloud/google-settings/update
+  - /api/{app_name}/cloud/google-settings/get
+  - /api/{app_name}/ms/settings/update
+  - /api/{app_name}/ms/settings/get
+  - /api/{app_name}/cloud/mail/send
+  - /api/sys/admin/content-share/{rel_path:path}
