@@ -46,28 +46,7 @@ func createInstance[T any]() T {
 	instance := reflect.New(reflect.TypeOf(zero)).Elem().Interface().(T)
 	return instance
 }
-func RegisterService[T1 any, T2 any]() error {
-	var zeroSource T1
-	var insDest = createInstance[T2]()
-	source := reflect.TypeOf(zeroSource)
-	dest := reflect.TypeOf(insDest)
-	initMethod, hasMethod := dest.MethodByName("Init")
-	
-	
-	if hasMethod {
-		instanceValue := reflect.ValueOf(insDest)
-		initMethod.Func.Call([]reflect.Value{instanceValue})
-		AppContext.services[source] = dest
-		return nil
-	}
-	else{
-		return errors.New("Service must have Init() method")
-	}
-	
-}
-func (app *Application) GetService(serviceType interface{}) interface{} {
-	return app.services[reflect.TypeOf(serviceType)]
-}
+
 func init() {
 	AppContext = Application{}
 	err := AppContext.Init()
