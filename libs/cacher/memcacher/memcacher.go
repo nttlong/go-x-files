@@ -138,9 +138,9 @@ func (c *MemcacheCacher) HealthCheck(timeout time.Duration) error {
 	}
 	return nil
 }
-func NewMemcacheCacher(server, prefix string) (*MemcacheCacher, error) {
+func NewMemcacheCacher(server, prefix string) *MemcacheCacher {
 	if server == "" {
-		return nil, fmt.Errorf("server address cannot be empty")
+		panic(fmt.Errorf("server address cannot be empty"))
 	}
 
 	mc := &MemcacheCacher{
@@ -153,9 +153,9 @@ func NewMemcacheCacher(server, prefix string) (*MemcacheCacher, error) {
 	// Attempt a Ping to check the connection
 	err := client.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to memcached server: %w", err)
+		panic(fmt.Errorf("failed to connect to memcached server: %w", err))
 	}
 
 	mc.client = client
-	return mc, nil
+	return mc
 }

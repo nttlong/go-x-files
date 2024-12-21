@@ -22,23 +22,17 @@ type Application struct {
 	Cacher  cacher.Cacher
 }
 
-func (app *Application) Init() error {
+func (app *Application) Init() {
 	app.Name = "go-x-files"
 	app.Version = "0.0.1"
 	app.AppPath = config.GetAppPath()
 	// move to parent directory to load config file
 	app.AppPath = filepath.Dir(filepath.Dir(app.AppPath))
 
-	appConfig, err := config.LoadConfig(app.AppPath + "/config.yml")
-	if err != nil {
-		return err
-	}
+	appConfig := config.LoadConfig(app.AppPath + "/config.yml")
+
 	app.Config = appConfig
-	app.Cacher, err = memcacher.NewMemcacheCacher(app.Config.CacheServer, app.Config.CachePrefix)
-	if err != nil {
-		return err
-	}
-	return nil
+	app.Cacher = memcacher.NewMemcacheCacher(app.Config.CacheServer, app.Config.CachePrefix)
 
 }
 
@@ -46,8 +40,6 @@ var AppContext Application
 
 func InitGlobalContext() {
 	AppContext = Application{}
-	err := AppContext.Init()
-	if err != nil {
-		panic(err)
-	}
+	AppContext.Init()
+
 }

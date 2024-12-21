@@ -129,26 +129,24 @@ func GetAppPath() string {
 	_, filename, _, _ := runtime.Caller(1)
 	return path.Dir(filename)
 }
-func LoadConfig(filename string) (*Config, error) {
+func LoadConfig(filename string) *Config {
 	configOnce.Do(func() {
 		// Read the YAML file
 		data, err := os.ReadFile(filename)
 		if err != nil {
-			configErr = fmt.Errorf("failed to read config file: %w", err)
-			return // Important: Return here to prevent further processing
+			panic(err)
 		}
 
 		// Unmarshal the YAML data into the Config struct
 		config = &Config{}
 		err = yaml.Unmarshal(data, config)
 		if err != nil {
-			configErr = fmt.Errorf("failed to unmarshal config: %w", err)
-			return
+			panic(err)
 		}
 
 	})
 
-	return config, configErr
+	return config
 }
 
 // print the config as jon format with indentation
@@ -158,7 +156,7 @@ func (c *Config) String() string {
 	}
 	jsonData, err := json.MarshalIndent(c, "", "    ") // Use MarshalIndent for pretty printing
 	if err != nil {
-		return fmt.Sprintf("Error marshaling config to JSON: %v", err)
+		panic(fmt.Sprintf("Error marshaling config to JSON: %v", err))
 	}
 	return string(jsonData)
 }
