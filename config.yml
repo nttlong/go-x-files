@@ -170,3 +170,8 @@ backend_api:
   - /api/{app_name}/ms/settings/get
   - /api/{app_name}/cloud/mail/send
   - /api/sys/admin/content-share/{rel_path:path}
+log:
+  path: ./logs/lv-file.log
+  rote: 10
+  size: 1000000000
+  format: text

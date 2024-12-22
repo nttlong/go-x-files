@@ -1,161 +1,153 @@
 package memcacher
 
 import (
-	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"time"
-
-	"crypto/sha256"
-	"encoding/hex"
 
 	"github.com/bradfitz/gomemcache/memcache"
 	cacher "github.com/unvs/libs/cacher"
 )
 
 type MemcacheCacher struct {
-	server string
+	Server string
 	client *memcache.Client
-	prefix string
-	expiry time.Duration
+	Prefix string
+	Expiry time.Duration
 }
 type Cacher cacher.Cacher
 
-// NewMemcacheCacher creates a new MemcacheCacher
-func (c *MemcacheCacher) Init() error {
-	mc := memcache.New(c.server)
-	err := mc.Ping()
-	if err != nil {
-		return fmt.Errorf("memcache ping error: %w", err)
+func makeHas256Key(prefix string, key string) string {
+	h := sha256.Sum256([]byte(prefix + "/" + key))
+	return hex.EncodeToString(h[:])
+}
+func (c *MemcacheCacher) init() {
+	if c.client == nil {
+		c.client = memcache.New(c.Server)
+		c.client.Timeout = 10 * time.Second
+
 	}
-	return nil
 }
+func (c *MemcacheCacher) SetText(key string, value string, options ...cacher.SetExpireOption) {
+	c.init()
+	var expire time.Duration
+	opts := cacher.SetExpireOptions{
+		Expiry: c.Expiry, // Default expiry
+	}
 
-func (c *MemcacheCacher) SetPrefix(prefix string) error {
-	c.prefix = prefix
-	return nil
-}
-
-func (c *MemcacheCacher) GetPrefix() string {
-	return c.prefix
-}
-
-func (c *MemcacheCacher) GetKey(key string) string {
-	relKey := c.prefix + key
-	hash256 := sha256.Sum256([]byte(relKey))
-	return hex.EncodeToString(hash256[:])
-}
-
-func (c *MemcacheCacher) GetString(key string) string {
-	item, err := c.client.Get(c.GetKey(key))
+	for _, option := range options {
+		option(&opts)
+	}
+	if expire == 0 {
+		expire = c.Expiry
+	}
+	err := c.client.Set(&memcache.Item{
+		Key:        makeHas256Key(c.Prefix, key),
+		Value:      []byte(value),
+		Expiration: int32(expire.Seconds()),
+	})
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("MemcacheCacher: SetText: %s", err))
+	}
+}
+
+func (c *MemcacheCacher) GetText(key string) string {
+	c.init()
+	item, err := c.client.Get(makeHas256Key(c.Prefix, key))
+	if err != nil {
+		panic(fmt.Sprintf("MemcacheCacher: GetText: %s", err))
 	}
 	return string(item.Value)
 }
-
-func (c *MemcacheCacher) SetString(key string, value string, expiry time.Duration) error {
-	b, err := marshalValue(value)
+func (c *MemcacheCacher) Delete(key string) {
+	c.init()
+	err := c.client.Delete(makeHas256Key(c.Prefix, key))
 	if err != nil {
-		return err
+		panic(fmt.Sprintf("MemcacheCacher: Delete: %s", err))
+	}
+}
+func (c *MemcacheCacher) SetDict(key string, value map[string]interface{}, options ...cacher.SetExpireOption) {
+	c.init()
+	var expire time.Duration
+	opts := cacher.SetExpireOptions{
+		Expiry: c.Expiry, // Default expiry
 	}
 
-	item := &memcache.Item{
-		Key:        c.GetKey(key),
-		Value:      b,
-		Expiration: int32(c.expiry.Seconds()),
+	for _, option := range options {
+		option(&opts)
 	}
-	return c.client.Set(item)
+	if expire == 0 {
+		expire = c.Expiry
+	}
+	//convert value to []byte
+	jsonValue, err := json.Marshal(value)
+	if err != nil {
+		panic(fmt.Sprintf("MemcacheCacher: SetDict: %s", err))
+	}
+	err = c.client.Set(&memcache.Item{
+		Key:        makeHas256Key(c.Prefix, key),
+		Value:      []byte(jsonValue),
+		Expiration: int32(expire.Seconds()),
+	})
+	if err != nil {
+		panic(fmt.Sprintf("MemcacheCacher: SetDict: %s", err))
+	}
 }
-
-func (c *MemcacheCacher) Delete(key string) error {
-	return c.client.Delete(c.GetKey(key))
-}
-
 func (c *MemcacheCacher) GetDict(key string) map[string]interface{} {
-	val, err := c.client.Get(key)
+	c.init()
+	item, err := c.client.Get(makeHas256Key(c.Prefix, key))
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("MemcacheCacher: GetDict: %s", err))
 	}
-	if val == nil {
-		return nil
-	}
-
-	var dict map[string]interface{}
-	err = json.Unmarshal(val.Value, &dict)
+	//convert vlue of item to map[string]interface{}
+	var value map[string]interface{}
+	err = json.Unmarshal(item.Value, &value)
 	if err != nil {
-		panic(fmt.Errorf("failed to unmarshal dict: %w", err))
+		panic(fmt.Sprintf("MemcacheCacher: GetDict: %s", err))
 	}
-	return dict
+	return value
 }
+func (c *MemcacheCacher) SetStruct(key string, value interface{}, options ...cacher.SetExpireOption) {
+	c.init()
+	var expire time.Duration
+	opts := cacher.SetExpireOptions{
+		Expiry: c.Expiry, // Default expiry
+	}
 
-func (m *MemcacheCacher) SetDict(key string, value map[string]interface{}, expiry time.Duration) error {
-	data, err := json.Marshal(value)
+	for _, option := range options {
+		option(&opts)
+	}
+	if expire == 0 {
+		expire = c.Expiry
+	}
+	//convert value to []byte
+	jsonValue, err := json.Marshal(value)
 	if err != nil {
-		return fmt.Errorf("failed to marshal map to JSON: %w", err)
+		panic(fmt.Sprintf("MemcacheCacher: SetStruct: %s", err))
 	}
-
-	finalExpiry := m.expiry // Use the default expiry
-
-	if expiry != 0 { // Check if expiry is not the zero value
-		finalExpiry = expiry // Override with the provided expiry
-	}
-
-	item := &memcache.Item{Key: m.GetKey(key), Value: data, Expiration: int32(finalExpiry.Seconds())}
-	return m.client.Set(item)
-}
-
-// marshalValue marshals any value to []byte
-func marshalValue(value interface{}) ([]byte, error) {
-	switch v := value.(type) {
-	case []byte:
-		return v, nil
-	case string:
-		return []byte(v), nil
-	case int, int64, uint64, float64, int32, uint32:
-		return []byte(fmt.Sprintf("%v", v)), nil
-	default:
-		jsonByte, err := json.Marshal(value)
-		if err != nil {
-			return nil, fmt.Errorf("can't marshal value to json: %w", err)
-		}
-		return jsonByte, nil
+	err = c.client.Set(&memcache.Item{
+		Key:        makeHas256Key(c.Prefix, key),
+		Value:      []byte(jsonValue),
+		Expiration: int32(expire.Seconds()),
+	})
+	if err != nil {
+		panic(fmt.Sprintf("MemcacheCacher: SetStruct: %s", err))
 	}
 }
-func (c *MemcacheCacher) HealthCheck(timeout time.Duration) error {
-	_, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-	retry := 1000
-	for i := 0; i < retry; i++ {
-		if err := c.client.Ping(); err != nil {
-			if i == retry-1 {
-				return fmt.Errorf("memcached health check failed: %w", err)
-			}
-			time.Sleep(2000 * time.Millisecond)
-			continue
-		}
-		return nil
-	}
-	return nil
-}
-func NewMemcacheCacher(server, prefix string) *MemcacheCacher {
-	if server == "" {
-		panic(fmt.Errorf("server address cannot be empty"))
-	}
-
-	mc := &MemcacheCacher{
-		server: server,
-		prefix: prefix,
-	}
-
-	client := memcache.New(server)
-
-	// Attempt a Ping to check the connection
-	err := client.Ping()
+func (c *MemcacheCacher) GetStruct(key string, value interface{}) {
+	c.init()
+	item, err := c.client.Get(makeHas256Key(c.Prefix, key))
 	if err != nil {
-		panic(fmt.Errorf("failed to connect to memcached server: %w", err))
+		panic(fmt.Sprintf("MemcacheCacher: GetStruct: %s", err))
+	}
+	//convert value of item to map[string]interface{}
+
+	// value := new(returnType)
+	err = json.Unmarshal(item.Value, &value)
+	if err != nil {
+		panic(fmt.Sprintf("MemcacheCacher: GetStruct: %s", err))
 	}
 
-	mc.client = client
-	return mc
 }

@@ -4,21 +4,48 @@ import (
 	"fmt"
 
 	application "github.com/unvs/libs/application"
-	looger "github.com/unvs/libs/loggers"
+	"github.com/unvs/libs/cachery"
 )
 
+// decalre test strucutre
+type testStruct struct {
+	Name string
+	Age  int
+}
+
 func main() {
-	defer looger.HandlePanic()
+	mytest := testStruct{Name: "John", Age: 30}
+	//defer logger.HandlePanic()
 	application.InitGlobalContext()
+	cachery.Init(
+		application.AppContext.Config.CacheServer,
+		application.AppContext.Config.CachePrefix)
+	cachery.HealthCheck()
+	cachery.Set("testStruct", mytest, 0)
+	cachery.Set("testint", 1222, 0)
+	var testValue testStruct
 
-	app := application.AppContext
+	if cachery.Get("testStruct", &testValue) {
+		fmt.Println(testValue)
+	}
+	var testint int
+	if cachery.Get("testint", &testint) {
+		fmt.Println(testint)
+	}
 
-	app_path := app.AppPath
-	key := app.Cacher.GetKey("app_path")
-	println(key)
-	app.Cacher.SetString("app_path", app_path, 0)
-	test := app.Cacher.GetString("app_path")
+	//logger.SetupLoggers(application.AppContext.AppPath, application.AppContext.Config.Log.Path)
 
-	fmt.Println(test)
+	// app := application.AppContext
+
+	// app.Cacher.SetText("test", "Hello, World!", cacher.WithExpiry(10))
+	// test := app.Cacher.GetText("test")
+	// app.Cacher.SetStruct("testStruct", mytest, cacher.WithExpiry(10))
+	// mytest2 := testStruct{}
+	// app.Cacher.GetStruct("testStruct", &mytest2)
+	// //cast mytest2 to testStruct
+
+	// fmt.Println(mytest2.Name, mytest2.Age)
+
+	// fmt.Println(test)
 
 }

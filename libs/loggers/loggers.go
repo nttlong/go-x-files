@@ -3,6 +3,8 @@ package loggers
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"runtime/debug"
 )
 
@@ -33,4 +35,23 @@ func HandlePanic() {
 		log.Println(err) // Log the full error with stack trace
 		fmt.Println(err) // Print the full error with stack trace
 	}
+}
+func SetupLoggers(appDir string, logDir string) {
+	// if logdir start with './' combine with appdir
+	absLogDir := logDir
+	if logDir[0:2] == "./" {
+		absLogDir = filepath.Join(appDir, logDir[1:])
+	}
+	// create log directory if not exists
+	if _, err := os.Stat(absLogDir); os.IsNotExist(err) {
+		os.MkdirAll(absLogDir, 0755)
+	}
+	// create log file
+	logFile := filepath.Join(absLogDir, "app.log")
+	f, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalln("Failed to create log file:", err)
+	}
+	// set log output to file
+	log.SetOutput(f)
 }

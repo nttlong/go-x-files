@@ -1,0 +1,14 @@
+2024/12/22 10:47:44 MemcacheCacher: SetText: dial tcp 127.0.0.1:11211: connectex: No connection could be made because the target machine actively refused it.
+Stack trace:
+goroutine 1 [running]:
+runtime/debug.Stack()
+	C:/Program Files/Go/src/runtime/debug/stack.go:26 +0x6b
+github.com/unvs/libs/loggers.HandlePanic()
+	c:/code/go/go-x-files/go-x-files/libs/loggers/loggers.go:29 +0xcf
+panic({0x89a280?, 0xc0001bbe90?})
+	C:/Program Files/Go/src/runtime/panic.go:785 +0x136
+github.com/unvs/libs/cacher/memcacher.(*MemcacheCacher).SetText(0xc0000a3680, {0x8d2867, 0x4}, {0x8d488c, 0xd}, {0xc000090140, 0x1, 0x1})
+	c:/code/go/go-x-files/go-x-files/libs/cacher/memcacher/memcacher.go:51 +0x3ab
+main.main()
+	c:/code/go/go-x-files/go-x-files/main.go:18 +0x165
+

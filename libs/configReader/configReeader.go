@@ -117,6 +117,12 @@ type Config struct {
 	RemoteOcr     string `yaml:"remote_ocr"`
 	TikaServer    string `yaml:"tika_server"`
 	RemoteThumb   string `yaml:"remote_thumb"`
+	Log           struct {
+		Path string `yaml:"path"`
+		Rot  int    `yaml:"rote"`
+		Size int    `yaml:"size"`
+		Fmt  string `yaml:"format"`
+	} `yaml:"log"`
 }
 
 var (

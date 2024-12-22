@@ -6,7 +6,6 @@ import (
 
 	cacher "github.com/unvs/libs/cacher"
 
-	memcacher "github.com/unvs/libs/cacher/memcacher"
 	config "github.com/unvs/libs/configReader"
 )
 
@@ -32,7 +31,14 @@ func (app *Application) Init() {
 	appConfig := config.LoadConfig(app.AppPath + "/config.yml")
 
 	app.Config = appConfig
-	app.Cacher = memcacher.NewMemcacheCacher(app.Config.CacheServer, app.Config.CachePrefix)
+	//cast mc to cacher interface
+
+	// app.Cacher = &memcacher.MemcacheCacher{
+	// 	Server: app.Config.CacheServer,
+	// 	Prefix: app.Config.CachePrefix,
+	// 	// set default expiry is 4 hours
+	// 	Expiry: 14400,
+	// }
 
 }
 

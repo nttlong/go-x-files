@@ -1,0 +1,70 @@
+2024/12/22 10:49:43 MemcacheCacher: SetText: dial tcp 127.0.0.1:11211: connectex: No connection could be made because the target machine actively refused it.
+Stack trace:
+goroutine 1 [running]:
+runtime/debug.Stack()
+	C:/Program Files/Go/src/runtime/debug/stack.go:26 +0x6b
+github.com/unvs/libs/loggers.HandlePanic()
+	c:/code/go/go-x-files/go-x-files/libs/loggers/loggers.go:29 +0xcf
+panic({0x60a280?, 0xc00017fef0?})
+	C:/Program Files/Go/src/runtime/panic.go:785 +0x136
+github.com/unvs/libs/cacher/memcacher.(*MemcacheCacher).SetText(0xc0001076b0, {0x642863, 0x4}, {0x644888, 0xd}, {0xc00006a158, 0x1, 0x1})
+	c:/code/go/go-x-files/go-x-files/libs/cacher/memcacher/memcacher.go:51 +0x3ab
+main.main()
+	c:/code/go/go-x-files/go-x-files/main.go:18 +0x182
+
+2024/12/22 10:50:56 MemcacheCacher: SetText: dial tcp 127.0.0.1:11211: connectex: No connection could be made because the target machine actively refused it.
+Stack trace:
+goroutine 1 [running]:
+runtime/debug.Stack()
+	C:/Program Files/Go/src/runtime/debug/stack.go:26 +0x5e
+github.com/unvs/libs/loggers.HandlePanic()
+	C:/code/go/go-x-files/go-x-files/libs/loggers/loggers.go:29 +0x72
+panic({0x767ba0?, 0xc00017f8d0?})
+	C:/Program Files/Go/src/runtime/panic.go:785 +0x132
+github.com/unvs/libs/cacher/memcacher.(*MemcacheCacher).SetText(0xc000024ff0, {0x79e609, 0x4}, {0x7a04c3, 0xd}, {0xc00006c148, 0x1, 0xc00007e000?})
+	C:/code/go/go-x-files/go-x-files/libs/cacher/memcacher/memcacher.go:51 +0x23c
+main.main()
+	C:/code/go/go-x-files/go-x-files/main.go:18 +0x190
+
+2024/12/22 10:51:34 MemcacheCacher: SetText: %!s(<nil>)
+Stack trace:
+goroutine 1 [running]:
+runtime/debug.Stack()
+	C:/Program Files/Go/src/runtime/debug/stack.go:26 +0x5e
+github.com/unvs/libs/loggers.HandlePanic()
+	C:/code/go/go-x-files/go-x-files/libs/loggers/loggers.go:29 +0x72
+panic({0x767ba0?, 0xc0000ff8f0?})
+	C:/Program Files/Go/src/runtime/panic.go:785 +0x132
+github.com/unvs/libs/cacher/memcacher.(*MemcacheCacher).SetText(0xc000024ff0, {0x79e609, 0x4}, {0x7a04c3, 0xd}, {0xc00006c148, 0x1, 0xc00007e000?})
+	C:/code/go/go-x-files/go-x-files/libs/cacher/memcacher/memcacher.go:51 +0x23c
+main.main()
+	C:/code/go/go-x-files/go-x-files/main.go:18 +0x190
+
+2024/12/22 10:51:36 MemcacheCacher: SetText: %!s(<nil>)
+Stack trace:
+goroutine 1 [running]:
+runtime/debug.Stack()
+	C:/Program Files/Go/src/runtime/debug/stack.go:26 +0x5e
+github.com/unvs/libs/loggers.HandlePanic()
+	C:/code/go/go-x-files/go-x-files/libs/loggers/loggers.go:29 +0x72
+panic({0x767ba0?, 0xc0001398c0?})
+	C:/Program Files/Go/src/runtime/panic.go:785 +0x132
+github.com/unvs/libs/cacher/memcacher.(*MemcacheCacher).SetText(0xc00008afc0, {0x79e609, 0x4}, {0x7a04c3, 0xd}, {0xc000090148, 0x1, 0xc00007e000?})
+	C:/code/go/go-x-files/go-x-files/libs/cacher/memcacher/memcacher.go:51 +0x23c
+main.main()
+	C:/code/go/go-x-files/go-x-files/main.go:18 +0x190
+
+2024/12/22 10:52:18 MemcacheCacher: SetText: %!s(<nil>)
+Stack trace:
+goroutine 1 [running]:
+runtime/debug.Stack()
+	C:/Program Files/Go/src/runtime/debug/stack.go:26 +0x6b
+github.com/unvs/libs/loggers.HandlePanic()
+	c:/code/go/go-x-files/go-x-files/libs/loggers/loggers.go:29 +0xcf
+panic({0x22a280?, 0xc00017ff10?})
+	C:/Program Files/Go/src/runtime/panic.go:785 +0x136
+github.com/unvs/libs/cacher/memcacher.(*MemcacheCacher).SetText(0xc0001076b0, {0x262863, 0x4}, {0x264888, 0xd}, {0xc00006a158, 0x1, 0x1})
+	c:/code/go/go-x-files/go-x-files/libs/cacher/memcacher/memcacher.go:51 +0x3ab
+main.main()
+	c:/code/go/go-x-files/go-x-files/main.go:18 +0x182
+
