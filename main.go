@@ -3,8 +3,12 @@ package main
 import (
 	"fmt"
 
+	"reflect"
+
 	application "github.com/unvs/libs/application"
 	"github.com/unvs/libs/cachery"
+	db "github.com/unvs/libs/db/mongo"
+	acc "github.com/unvs/models/accounts"
 )
 
 // decalre test strucutre
@@ -19,10 +23,12 @@ func main() {
 	application.InitGlobalContext()
 	cachery.Init(
 		application.AppContext.Config.CacheServer,
-		application.AppContext.Config.CachePrefix)
+		application.AppContext.Config.CachePrefix,
+	)
 	cachery.HealthCheck()
-	cachery.Set("testStruct", mytest, 0)
-	cachery.Set("testint", 1222, 0)
+	cachery.Set("testStruct", mytest, cachery.WithExpiry(10))
+	cachery.Set("testint", 1222, cachery.WithExpiry(10))
+	cachery.Delete("testint")
 	var testValue testStruct
 
 	if cachery.Get("testStruct", &testValue) {
@@ -32,7 +38,16 @@ func main() {
 	if cachery.Get("testint", &testint) {
 		fmt.Println(testint)
 	}
+	// client := db.GetClient(application.AppContext.Config.Db)
+	//insert data into mongo
 
+	lst, err := db.GetAllTags(reflect.TypeOf(acc.Accounts{}))
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(lst)
+	//get data from mongo
 	//logger.SetupLoggers(application.AppContext.AppPath, application.AppContext.Config.Log.Path)
 
 	// app := application.AppContext
