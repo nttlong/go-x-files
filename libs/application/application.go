@@ -2,11 +2,12 @@
 package application
 
 import (
-	"path/filepath"
+	"context"
 
 	cacher "github.com/unvs/libs/cacher"
 
 	config "github.com/unvs/libs/configReader"
+	dbx "github.com/unvs/libs/db/ctx"
 )
 
 // app struct
@@ -15,37 +16,38 @@ type Application struct {
 	Name string
 	// version of the app will be set by the build process or env variable
 	// in docker container
-	Version string
-	AppPath string
-	Config  *config.Config
-	Cacher  cacher.Cacher
+	Version    string
+	AppPath    string
+	Config     *config.Config
+	Cacher     *cacher.Cacher
+	AppContext *context.Context
+	DB         *dbx.DBContext
 }
 
-func (app *Application) Init() {
-	app.Name = "go-x-files"
-	app.Version = "0.0.1"
-	app.AppPath = config.GetAppPath()
-	// move to parent directory to load config file
-	app.AppPath = filepath.Dir(filepath.Dir(app.AppPath))
-
-	appConfig := config.LoadConfig(app.AppPath + "/config.yml")
-
-	app.Config = appConfig
-	//cast mc to cacher interface
-
-	// app.Cacher = &memcacher.MemcacheCacher{
-	// 	Server: app.Config.CacheServer,
-	// 	Prefix: app.Config.CachePrefix,
-	// 	// set default expiry is 4 hours
-	// 	Expiry: 14400,
-	// }
-
+func CreateApp() Application {
+	app := Application{}
+	return app
 }
+func (app *Application) SetAppPath(path string) Application {
+	app.AppPath = path
+	return *app
+}
+func (app *Application) LoadConfig() Application {
+	if app.AppPath == "" {
+		panic("AppPath is not set")
+	}
+	if app.AppContext == nil {
+		panic("AppContext is not set")
+	}
+	app.Config = config.LoadConfig(app.AppPath + "/config.yml")
 
-var AppContext Application
-
-func InitGlobalContext() {
-	AppContext = Application{}
-	AppContext.Init()
-
+	return *app
+}
+func (app *Application) SetCacher(cacher cacher.Cacher) Application {
+	app.Cacher = &cacher
+	return *app
+}
+func (app *Application) SetContext(ctx context.Context) Application {
+	app.AppContext = &ctx
+	return *app
 }
